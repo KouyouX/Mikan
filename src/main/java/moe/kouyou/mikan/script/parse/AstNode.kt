@@ -1,8 +1,9 @@
 package moe.kouyou.mikan.script.parse
 
-import moe.kouyou.mikan.script.lexical.Token
+import moe.kouyou.mikan.script.exec.MValue
+import moe.kouyou.mikan.script.lexical.*
 
-open class AstNode {
+sealed class AstNode {
   
   class Root: AstNode() {
     val procedures = hashMapOf<String, Procedure>()
@@ -16,17 +17,69 @@ open class AstNode {
   
   class SetVar(val name: Token, val value: Expression): Statement()
   
-  class For(val condition: Expression): Statement()
+  class For(val condition: Expression, val code: Block): Statement()
   
-  class If: AstNode()
+  class If(val condition: Expression, val code: Block): Statement()
   
-  open class Expression: AstNode(){
-    val operands = arrayListOf<Expression>()
-    val operators = arrayListOf<Token>()
+  sealed class Expression: AstNode() {
+    abstract fun addOperand(operand: Expression)
+    abstract fun addOperator(operator: Token)
+    abstract fun getOperands(): List<Expression>
+    abstract fun getOperators(): List<Token>
   }
   
-  class Atom(val value: Token): Expression()
+  class AddLvlExpression: Expression() {
+    private val operands = arrayListOf<MulLvlExpression>()
+    private val operators = arrayListOf<Token>()
+    override fun getOperands(): List<MulLvlExpression> = operands
+    override fun getOperators(): List<Token> = operators
+    
+    override fun addOperand(operand: Expression) {
+      if (operand is MulLvlExpression) operands.add(operand)
+      else throw RuntimeException()
+    }
+    
+    override fun addOperator(operator: Token) {
+      if (operator.type != TokenType.Operator) throw RuntimeException()
+      if (operator.ctx == "+" || operator.ctx == "-") operators.add(operator)
+      else throw RuntimeException()
+    }
+  }
   
-  abstract class Command: AstNode()
+  class MulLvlExpression: Expression() {
+    private val operands = arrayListOf<Atom>()
+    private val operators = arrayListOf<Token>()
+    override fun getOperands(): List<Atom> = operands
+    override fun getOperators(): List<Token> = operators
+    
+    override fun addOperand(operand: Expression) {
+      if (operand is Atom) operands.add(operand)
+      else throw RuntimeException()
+    }
+    
+    override fun addOperator(operator: Token) {
+      if (operator.type != TokenType.Operator) throw RuntimeException()
+      if (operator.ctx == "*" || operator.ctx == "/" || operator.ctx == "%") operators.add(operator)
+      else throw RuntimeException()
+    }
+  }
+  
+  class Atom(val value: Token): Expression() {
+    val type = value.type
+    
+    init {
+      if (!(value.isSymbol() || value.isLiteral())) throw RuntimeException()
+    }
+    
+    override fun addOperand(operands: Expression) = throw RuntimeException("not implemented")
+    override fun addOperator(operator: Token) = throw RuntimeException("not implemented")
+    override fun getOperands(): List<Expression> = throw RuntimeException("not implemented")
+    override fun getOperators(): List<Token> = throw RuntimeException("not implemented")
+  }
+  
+  abstract class Command: AstNode() {
+    abstract val target: (Array<MValue>) -> MValue
+    abstract val args: Array<Expression>
+  }
   
 }
