@@ -1,12 +1,10 @@
 package moe.kouyou.mikan.script.exec
 
 import moe.kouyou.mikan.script.lexical.TokenType
-import moe.kouyou.mikan.script.lexical.TokenType.*
 import moe.kouyou.mikan.script.parse.AstNode
-import moe.kouyou.mikan.script.exec.*
 
-class Executor(val procedure: AstNode.Procedure) {
-  val vars = hashMapOf<String, MValue>()
+class Executor(private val procedure: AstNode.Procedure) {
+  private val vars = hashMapOf<String, MValue>()
   
   fun exec() {
     execBlock(procedure.code)
@@ -30,11 +28,11 @@ class Executor(val procedure: AstNode.Procedure) {
   }
   
   private fun execWhile(node: AstNode.While) {
-    while (evalExpression(node.condition) == MBoolean.True) execBlock(node.code)
+    while (evalExpression(node.condition) == MNumber.True) execBlock(node.code)
   }
   
   private fun execRepeat(node: AstNode.Repeat) {
-    var count = (evalExpression(node.count) as MNumber).value
+    var count = ((evalExpression(node.count) as MNumber).value as Double).toInt()
     while (count-- > 0) execBlock(node.code)
   }
   
@@ -48,16 +46,17 @@ class Executor(val procedure: AstNode.Procedure) {
   }
   
   private fun evalExpression(node: AstNode.Expression): MValue {
-    if (node.operands.size == 1) return evalAtom(node.operands[0] as AstNode.Atom)
-    var operand1 = evalExpression(node.operands[0] as AstNode.Expression) as MNumber
-    for (i in 0..node.operators.size) {
-      val operand2 = operand1 + evalExpression(node.operands[i] as AstNode.Expression) as MNumber
-      operand1 = when(node.operators[i].ctx){
-        "+" -> operand1 + operand2
-        "-" -> operand1 - operand2
-        "*" -> operand1 * operand2
-        "/" -> operand1 / operand2
-        "%" -> operand1 % operand2
+    var operand1 = if(node.operands[0] is AstNode.Atom) evalAtom(node.operands[0] as AstNode.Atom)
+      else evalExpression(node.operands[0] as AstNode.Expression)
+    for (i in node.operators.indices) {
+      val operand2 = if(node.operands[i] is AstNode.Atom) evalAtom(node.operands[i] as AstNode.Atom) as MNumber
+      else evalExpression(node.operands[i] as AstNode.Expression) as MNumber
+      operand1 = when(node.operators[i + 1].ctx){
+        "+" -> operand1 as MNumber + operand2
+        "-" -> operand1 as MNumber - operand2
+        "*" -> operand1 as MNumber * operand2
+        "/" -> operand1 as MNumber / operand2
+        "%" -> operand1 as MNumber % operand2
         else -> throw RuntimeException()
       }
     }
@@ -65,7 +64,7 @@ class Executor(val procedure: AstNode.Procedure) {
   }
   
   private fun evalAtom(node: AstNode.Atom): MValue {
-    when (node.value.type) {
+    return when (node.value.type) {
       TokenType.Symbol -> vars.getOrElse(node.value.ctx) {throw RuntimeException()}
       //TokenType.Integer -> MNumber(node.value.ctx.toDouble())
       //TokenType.Float -> MFloat(node.value.ctx.toFloat())

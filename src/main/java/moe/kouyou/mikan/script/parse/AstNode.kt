@@ -1,7 +1,6 @@
 package moe.kouyou.mikan.script.parse
 
 import moe.kouyou.mikan.script.api.Executable
-import moe.kouyou.mikan.script.exec.MValue
 import moe.kouyou.mikan.script.lexical.*
 
 sealed class AstNode {

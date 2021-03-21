@@ -14,7 +14,7 @@ eos = ;\r\n
 object Lexer {
   private val symbolChar: CharArray = ("ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "abcdefghijklmnopqrstuvwxyz" + "0123456789" + "\$_").toCharArray()
   
-  fun analyze(source: String): Array<Token> {
+  fun analyze(source: String): TokenStream {
     val result = arrayListOf<Token>()
     val src = source.toCharArray()
     var offset = 0
@@ -73,7 +73,7 @@ object Lexer {
           result.add(Token(TokenType.String, sb.toString()))
         }
         
-        '+', '-', '*', '/', '%' -> {
+        '+', '-', '*', '/', '%', '=' -> {
           result.add(Token(TokenType.Operator, src[offset].toString()))
           ++offset
         }
@@ -93,7 +93,7 @@ object Lexer {
         else -> throw RuntimeException()
       }
     }
-    return result.toTypedArray()
+    return TokenStream(result.toTypedArray())
   }
   
 }

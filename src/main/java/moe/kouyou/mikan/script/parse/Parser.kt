@@ -18,6 +18,7 @@ abstract class ParserModule {
 
 object ProcedureParser: ParserModule() {
   override fun parse(stream: TokenStream): AstNode.Procedure {
+    stream.expect("procedure")
     val name = stream.expectSymbol()
     val block = BlockParser.parse(stream)
     return AstNode.Procedure(name, block)
@@ -28,9 +29,10 @@ object BlockParser: ParserModule() {
   override fun parse(stream: TokenStream): AstNode.Block {
     stream.expect("{")
     val stats = arrayListOf<AstNode.Statement>()
+    stream.flushEOS()
     while (!stream.isNext("}")) {
-      stream.flushEOS()
       stats.add(StatementParser.parse(stream))
+      stream.flushEOS()
     }
     stream.expect("}")
     return AstNode.Block(stats.toTypedArray())

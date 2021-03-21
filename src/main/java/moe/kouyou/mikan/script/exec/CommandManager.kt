@@ -7,14 +7,15 @@ object CommandManager {
   private val commands = hashMapOf<String, Executable>()
   
   @JvmStatic
-  fun registerCommand(name: String, command: Executable) = commands.putIfAbsent(name ,command)
+  fun registerCommand(name: String, command: Executable) = commands.putIfAbsent(name, command)
   
   @JvmStatic
   fun getCommand(name: String) = commands.getOrElse(name) {throw RuntimeException()}
   
-  init{
+  init {
     registerCommand("set") {}
     registerCommand("if") {}
     registerCommand("repeat") {}
+    registerCommand("print") {it.forEach {y -> println(y!!.value)}}
   }
 }

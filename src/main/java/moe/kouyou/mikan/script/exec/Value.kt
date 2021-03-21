@@ -1,8 +1,8 @@
 package moe.kouyou.mikan.script.exec
 
-sealed class MValue
+sealed class MValue(val value: Any)
 
-class MNumber(val value: Double): MValue() {
+class MNumber(value: Double): MValue(value) {
   companion object {
     @JvmStatic
     val True = MNumber(1.0)
@@ -24,7 +24,7 @@ class MNumber(val value: Double): MValue() {
   }
 }
 
-class MString(val value: String): MValue() {
+class MString(value: String): MValue(value) {
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is MString) return false
