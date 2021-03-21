@@ -1,28 +1,25 @@
 package moe.kouyou.mikan.script.parse
 
-import moe.kouyou.mikan.script.api.Executable
 import moe.kouyou.mikan.script.lexical.*
 
-sealed class AstNode {
-  
-  class Procedure(val name: Token, val code: Block): AstNode()
-  
-  abstract class Statement: AstNode()
-  
-  class Block(val statements: Array<Statement>): Statement()
-  
-  class SetVar(val name: Token, val value: Expression): Statement()
-  
-  class While(val condition: Expression, val code: Block): Statement()
-  
-  class Repeat(val count: Expression, val code: Block): Statement()
-  
-  class If(val condition: Expression, val code: Block): Statement()
-  
-  class Expression(val operands: Array<AstNode>, val operators: Array<Token>): AstNode()
-  
-  class Atom(val value: Token): AstNode()
-  
-  class Command(val target: Executable, val args: Array<Expression>): Statement()
-  
-}
+sealed class AstNode
+
+class ProcedureNode(val name: Token, val code: BlockNode): AstNode()
+
+abstract class StatementNode: AstNode()
+
+class BlockNode(val statements: Array<StatementNode>): StatementNode()
+
+class VarNode(val name: Token, val value: ExprNode): StatementNode()
+
+class WhileNode(val condition: ExprNode, val code: BlockNode): StatementNode()
+
+class RepeatNode(val count: ExprNode, val code: BlockNode): StatementNode()
+
+class IfNode(val condition: ExprNode, val code: BlockNode): StatementNode()
+
+class ExprNode(val operands: Array<AstNode>, val operators: Array<String>): AstNode()
+
+class AtomNode(val value: Token): AstNode()
+
+class CommandNode(val target: String, val args: Array<ExprNode>): StatementNode()

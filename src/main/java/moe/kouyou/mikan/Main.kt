@@ -8,14 +8,12 @@ import org.bukkit.plugin.java.JavaPlugin
 fun main() {
   Executor(Parser.parse(Lexer.analyze("""
     procedure main{
-      set a = 1
+      var a = 2 *124 *-1 + 1
+      print a
+      var asiofn89h2huifbasiuobf9dsbvuo2o3htf9asbgfbas897gh83b = 1
+      print -3 *-3
       print '红叶'
-      if (a) {
-        print a
-      }
-      repeat(3) {
-        print a
-      }
+      print 3 * 3 3 + 3 3 3+3 3*3
     }
   """.trimIndent()))[0]).exec()
 }
@@ -25,9 +23,9 @@ fun main() {
  * Main class of Mikan.
  * @author Kouyou
  */
-class Main: JavaPlugin(){
+class Main: JavaPlugin() {
   
-  override fun onEnable(){
+  override fun onEnable() {
   
   }
   

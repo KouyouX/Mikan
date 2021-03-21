@@ -1,57 +1,57 @@
 package moe.kouyou.mikan.script.exec
 
 import moe.kouyou.mikan.script.lexical.TokenType
-import moe.kouyou.mikan.script.parse.AstNode
+import moe.kouyou.mikan.script.parse.*
 
-class Executor(private val procedure: AstNode.Procedure) {
+class Executor(private val procedure: ProcedureNode) {
   private val vars = hashMapOf<String, MValue>()
   
   fun exec() {
     execBlock(procedure.code)
   }
   
-  private fun execBlock(node: AstNode.Block) {
+  private fun execBlock(node: BlockNode) {
     for (statement in node.statements) {
       when (statement) {
-        is AstNode.If -> execIf(statement)
-        is AstNode.While -> execWhile(statement)
-        is AstNode.Repeat -> execRepeat(statement)
-        is AstNode.SetVar -> execSetVar(statement)
-        is AstNode.Command -> execCommand(statement)
+        is IfNode -> execIf(statement)
+        is WhileNode -> execWhile(statement)
+        is RepeatNode -> execRepeat(statement)
+        is VarNode -> execVar(statement)
+        is CommandNode -> execCommand(statement)
         else -> throw RuntimeException()
       }
     }
   }
   
-  private fun execIf(node: AstNode.If) {
+  private fun execIf(node: IfNode) {
     if (evalExpression(node.condition) == MNumber.True) execBlock(node.code)
   }
   
-  private fun execWhile(node: AstNode.While) {
+  private fun execWhile(node: WhileNode) {
     while (evalExpression(node.condition) == MNumber.True) execBlock(node.code)
   }
   
-  private fun execRepeat(node: AstNode.Repeat) {
+  private fun execRepeat(node: RepeatNode) {
     var count = ((evalExpression(node.count) as MNumber).value as Double).toInt()
     while (count-- > 0) execBlock(node.code)
   }
   
-  private fun execSetVar(node: AstNode.SetVar) {
+  private fun execVar(node: VarNode) {
     vars[node.name.ctx] = evalExpression(node.value)
   }
   
-  private fun execCommand(node: AstNode.Command) {
+  private fun execCommand(node: CommandNode) {
     val args = node.args.map(this::evalExpression).toTypedArray()
-    node.target.execute(args)
+    CommandManager.getCommand(node.target).execute(args)
   }
   
-  private fun evalExpression(node: AstNode.Expression): MValue {
-    var operand1 = if(node.operands[0] is AstNode.Atom) evalAtom(node.operands[0] as AstNode.Atom)
-      else evalExpression(node.operands[0] as AstNode.Expression)
+  private fun evalExpression(node: ExprNode): MValue {
+    var operand1 = if(node.operands[0] is AtomNode) evalAtom(node.operands[0] as AtomNode)
+      else evalExpression(node.operands[0] as ExprNode)
     for (i in node.operators.indices) {
-      val operand2 = if(node.operands[i] is AstNode.Atom) evalAtom(node.operands[i] as AstNode.Atom) as MNumber
-      else evalExpression(node.operands[i] as AstNode.Expression) as MNumber
-      operand1 = when(node.operators[i + 1].ctx){
+      val operand2 = if(node.operands[i + 1] is AtomNode) evalAtom(node.operands[i + 1] as AtomNode) as MNumber
+      else evalExpression(node.operands[i + 1] as ExprNode) as MNumber
+      operand1 = when(node.operators[i]){
         "+" -> operand1 as MNumber + operand2
         "-" -> operand1 as MNumber - operand2
         "*" -> operand1 as MNumber * operand2
@@ -63,7 +63,7 @@ class Executor(private val procedure: AstNode.Procedure) {
     return operand1
   }
   
-  private fun evalAtom(node: AstNode.Atom): MValue {
+  private fun evalAtom(node: AtomNode): MValue {
     return when (node.value.type) {
       TokenType.Symbol -> vars.getOrElse(node.value.ctx) {throw RuntimeException()}
       //TokenType.Integer -> MNumber(node.value.ctx.toDouble())

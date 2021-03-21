@@ -6,6 +6,7 @@ import moe.kouyou.mikan.script.lexical.*
 inline fun TokenStream.isNext(literal: String) = this.peek().ctx == literal
 inline fun TokenStream.isNextSymbol() = this.peek().isSymbol()
 inline fun TokenStream.isNextString() = this.peek().isString()
+
 //inline fun TokenStream.isNextInteger() = this.peek().isInteger()
 //inline fun TokenStream.isNextFloat() = this.peek().isFloat()
 //inline fun TokenStream.isNextBoolean() = this.peek().isBoolean()
@@ -158,5 +159,5 @@ fun TokenStream.expectEOS(): Token {
 
 // others
 fun TokenStream.flushEOS() {
-  while(this.peek().isEOS()) this.next()
+  while (this.peek().isEOS()) this.next()
 }

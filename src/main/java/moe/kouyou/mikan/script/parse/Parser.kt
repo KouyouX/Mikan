@@ -1,12 +1,11 @@
 package moe.kouyou.mikan.script.parse
 
-import moe.kouyou.mikan.script.exec.CommandManager
 import moe.kouyou.mikan.script.lexical.*
 
 
 object Parser {
-  fun parse(stream: TokenStream): Array<AstNode.Procedure> {
-    val result = arrayListOf<AstNode.Procedure>()
+  fun parse(stream: TokenStream): Array<ProcedureNode> {
+    val result = arrayListOf<ProcedureNode>()
     while (stream.hasMore()) result.add(ProcedureParser.parse(stream))
     return result.toTypedArray()
   }
@@ -17,110 +16,110 @@ abstract class ParserModule {
 }
 
 object ProcedureParser: ParserModule() {
-  override fun parse(stream: TokenStream): AstNode.Procedure {
-    stream.expect("procedure")
+  override fun parse(stream: TokenStream): ProcedureNode {
+    stream.expect(ReservedWord.Procedure)
     val name = stream.expectSymbol()
     val block = BlockParser.parse(stream)
-    return AstNode.Procedure(name, block)
+    return ProcedureNode(name, block)
   }
 }
 
 object BlockParser: ParserModule() {
-  override fun parse(stream: TokenStream): AstNode.Block {
+  override fun parse(stream: TokenStream): BlockNode {
     stream.expect("{")
-    val stats = arrayListOf<AstNode.Statement>()
+    val stats = arrayListOf<StatementNode>()
     stream.flushEOS()
     while (!stream.isNext("}")) {
       stats.add(StatementParser.parse(stream))
       stream.flushEOS()
     }
     stream.expect("}")
-    return AstNode.Block(stats.toTypedArray())
+    return BlockNode(stats.toTypedArray())
   }
 }
 
 object StatementParser: ParserModule() {
-  override fun parse(stream: TokenStream): AstNode.Statement {
+  override fun parse(stream: TokenStream): StatementNode {
     stream.flushEOS()
     val s = stream.peek()
     return when (s.ctx) {
-      "set" -> SetVarParser.parse(stream)
-      "if" -> IfParser.parse(stream)
-      "while" -> WhileParser.parse(stream)
-      "repeat" -> RepeatParser.parse(stream)
+      ReservedWord.Var -> VarParser.parse(stream)
+      ReservedWord.If -> IfParser.parse(stream)
+      ReservedWord.While -> WhileParser.parse(stream)
+      ReservedWord.Repeat -> RepeatParser.parse(stream)
       else -> SimpleCommandParser.parse(stream)
     }
   }
 }
 
-object SetVarParser: ParserModule() {
-  override fun parse(s: TokenStream): AstNode.SetVar {
-    s.expect("set")
-    val name = s.expectSymbol()
-    s.expect("=")
-    val expr = ExpressionParser.parse(s)
-    return AstNode.SetVar(name, expr)
+object VarParser: ParserModule() {
+  override fun parse(stream: TokenStream): VarNode {
+    stream.expect(ReservedWord.Var)
+    val name = stream.expectSymbol()
+    stream.expect("=")
+    val expr = ExpressionParser.parse(stream)
+    return VarNode(name, expr)
   }
 }
 
 object IfParser: ParserModule() {
-  override fun parse(stream: TokenStream): AstNode.If {
-    stream.expect("if")
+  override fun parse(stream: TokenStream): IfNode {
+    stream.expect(ReservedWord.If)
     stream.expect("(")
     val expr = ExpressionParser.parse(stream)
     stream.expect(")")
     val block = BlockParser.parse(stream)
-    return AstNode.If(expr, block)
+    return IfNode(expr, block)
   }
 }
 
 object WhileParser: ParserModule() {
-  override fun parse(stream: TokenStream): AstNode.While {
-    stream.expect("while")
+  override fun parse(stream: TokenStream): WhileNode {
+    stream.expect(ReservedWord.While)
     stream.expect("(")
     val expr = ExpressionParser.parse(stream)
     stream.expect(")")
     val block = BlockParser.parse(stream)
-    return AstNode.While(expr, block)
+    return WhileNode(expr, block)
   }
 }
 
 object RepeatParser: ParserModule() {
-  override fun parse(stream: TokenStream): AstNode.Repeat {
-    stream.expect("repeat")
+  override fun parse(stream: TokenStream): RepeatNode {
+    stream.expect(ReservedWord.Repeat)
     stream.expect("(")
     val expr = ExpressionParser.parse(stream)
     stream.expect(")")
     val block = BlockParser.parse(stream)
-    return AstNode.Repeat(expr, block)
+    return RepeatNode(expr, block)
   }
 }
 
 object ExpressionParser: ParserModule() {
-  override fun parse(stream: TokenStream): AstNode.Expression {
+  override fun parse(stream: TokenStream): ExprNode {
     return levelAdd(stream)
   }
   
-  private fun levelAdd(s: TokenStream): AstNode.Expression {
+  private fun levelAdd(s: TokenStream): ExprNode {
     val operands = arrayListOf<AstNode>()
-    val operators = arrayListOf<Token>()
+    val operators = arrayListOf<String>()
     operands.add(levelMul(s))
-    while (s.isNextOperator()) {
-      operators.add(s.next())
+    while (s.isNext("+") || s.isNext("-")) {
+      operators.add(s.next().ctx)
       operands.add(levelMul(s))
     }
-    return AstNode.Expression(operands.toTypedArray(), operators.toTypedArray())
+    return ExprNode(operands.toTypedArray(), operators.toTypedArray())
   }
   
-  private fun levelMul(s: TokenStream): AstNode.Expression {
+  private fun levelMul(s: TokenStream): ExprNode {
     val operands = arrayListOf<AstNode>()
-    val operators = arrayListOf<Token>()
+    val operators = arrayListOf<String>()
     operands.add(levelAtom(s))
-    while (s.isNextOperator()) {
-      operators.add(s.next())
+    while (s.isNext("*") || s.isNext("/") || s.isNext("%")) {
+      operators.add(s.next().ctx)
       operands.add(levelAtom(s))
     }
-    return AstNode.Expression(operands.toTypedArray(), operators.toTypedArray())
+    return ExprNode(operands.toTypedArray(), operators.toTypedArray())
   }
   
   private fun levelAtom(s: TokenStream): AstNode {
@@ -133,9 +132,9 @@ object ExpressionParser: ParserModule() {
       }
       s.isNext("-") && s.peek(1).isNumber() -> {
         s.next()
-        AstNode.Atom(Token(TokenType.Number, "-" + s.next()))
+        AtomNode(Token(TokenType.Number, "-" + s.next().ctx))
       }
-      s.isNextSymbol() || s.isNextLiteral() -> AstNode.Atom(s.next())
+      s.isNextSymbol() || s.isNextLiteral() -> AtomNode(s.next())
       else -> throw RuntimeException()
     }
   }
@@ -146,15 +145,15 @@ object ExpressionParser: ParserModule() {
  * 未来将会给命令开放自定义 parser
  */
 abstract class CommandParser: ParserModule() {
-  abstract override fun parse(stream: TokenStream): AstNode.Command
+  abstract override fun parse(stream: TokenStream): CommandNode
 }
 
 object SimpleCommandParser: CommandParser() {
-  override fun parse(stream: TokenStream): AstNode.Command {
+  override fun parse(stream: TokenStream): CommandNode {
     val name = stream.expectSymbol()
-    val args = arrayListOf<AstNode.Expression>()
+    val args = arrayListOf<ExprNode>()
     while (!stream.isNextEOS()) args.add(ExpressionParser.parse(stream))
-    return AstNode.Command(CommandManager.getCommand(name.ctx), args.toTypedArray())
+    return CommandNode(name.ctx, args.toTypedArray())
   }
   
 }
