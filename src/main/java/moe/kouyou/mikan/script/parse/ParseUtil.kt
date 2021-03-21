@@ -6,12 +6,14 @@ import moe.kouyou.mikan.script.lexical.*
 inline fun TokenStream.isNext(literal: String) = this.peek().ctx == literal
 inline fun TokenStream.isNextSymbol() = this.peek().isSymbol()
 inline fun TokenStream.isNextString() = this.peek().isString()
-inline fun TokenStream.isNextInteger() = this.peek().isInteger()
-inline fun TokenStream.isNextFloat() = this.peek().isFloat()
-inline fun TokenStream.isNextBoolean() = this.peek().isBoolean()
+//inline fun TokenStream.isNextInteger() = this.peek().isInteger()
+//inline fun TokenStream.isNextFloat() = this.peek().isFloat()
+//inline fun TokenStream.isNextBoolean() = this.peek().isBoolean()
+inline fun TokenStream.isNextNumber() = this.peek().isNumber()
 inline fun TokenStream.isNextEdge() = this.peek().isEdge()
-inline fun TokenStream.isOperator() = this.peek().isOperator()
+inline fun TokenStream.isNextOperator() = this.peek().isOperator()
 inline fun TokenStream.isNextLiteral() = this.peek().isLiteral()
+inline fun TokenStream.isNextEOS() = this.peek().isEOS()
 
 // ask
 fun TokenStream.askFor(literal: String): Token? {
@@ -35,6 +37,7 @@ fun TokenStream.askForString(): Token? {
   }
 }
 
+/*
 fun TokenStream.askForInteger(): Token? {
   val s = this.next()
   return if (s.type == TokenType.Integer) s else {
@@ -55,11 +58,11 @@ fun TokenStream.askForBoolean(): Token? {
     this.push(s); null
   }
 }
+*/
 
-fun TokenStream.askForLiteral(): Token? {
+fun TokenStream.askForNumber(): Token? {
   val s = this.next()
-  return if (s.type in arrayOf(TokenType.String, TokenType.Integer, TokenType.Float, TokenType.Boolean)) s
-  else {
+  return if (s.type == TokenType.Number) s else {
     this.push(s); null
   }
 }
@@ -74,6 +77,21 @@ fun TokenStream.askForEdge(): Token? {
 fun TokenStream.askForOperator(): Token? {
   val s = this.next()
   return if (s.type == TokenType.Operator) s else {
+    this.push(s); null
+  }
+}
+
+fun TokenStream.askForLiteral(): Token? {
+  val s = this.next()
+  return if (s.isLiteral()) s
+  else {
+    this.push(s); null
+  }
+}
+
+fun TokenStream.askForEOS(): Token? {
+  val s = this.next()
+  return if (s.type == TokenType.EOS) s else {
     this.push(s); null
   }
 }
@@ -94,6 +112,7 @@ fun TokenStream.expectString(): Token {
   return if (s.type == TokenType.String) s else throw RuntimeException()
 }
 
+/*
 fun TokenStream.expectInteger(): Token {
   val s = this.next()
   return if (s.type == TokenType.Integer) s else throw RuntimeException()
@@ -108,11 +127,12 @@ fun TokenStream.expectBoolean(): Token {
   val s = this.next()
   return if (s.type == TokenType.Boolean) s else throw RuntimeException()
 }
+*/
 
-fun TokenStream.expectLiteral(): Token {
+
+fun TokenStream.expectNumber(): Token {
   val s = this.next()
-  return if (s.type in arrayOf(TokenType.String, TokenType.Integer, TokenType.Float, TokenType.Boolean)) s
-  else throw RuntimeException()
+  return if (s.type == TokenType.Number) s else throw RuntimeException()
 }
 
 fun TokenStream.expectEdge(): Token {
@@ -123,4 +143,20 @@ fun TokenStream.expectEdge(): Token {
 fun TokenStream.expectOperator(): Token {
   val s = this.next()
   return if (s.type == TokenType.Operator) s else throw RuntimeException()
+}
+
+fun TokenStream.expectLiteral(): Token {
+  val s = this.next()
+  return if (s.isLiteral()) s
+  else throw RuntimeException()
+}
+
+fun TokenStream.expectEOS(): Token {
+  val s = this.next()
+  return if (s.type == TokenType.EOS) s else throw RuntimeException()
+}
+
+// others
+fun TokenStream.flushEOS() {
+  while(this.peek().isEOS()) this.next()
 }

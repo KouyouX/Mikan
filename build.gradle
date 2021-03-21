@@ -1,6 +1,7 @@
 plugins {
   id 'java'
   id 'org.jetbrains.kotlin.jvm' version '1.5.0-M1'
+  id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
 group = 'moe.kouyou'
@@ -20,6 +21,11 @@ dependencies {
   compileOnly 'org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT'
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
+
+shadowJar {
+
+}
+
 compileKotlin {
   kotlinOptions {
     jvmTarget = "1.8"
