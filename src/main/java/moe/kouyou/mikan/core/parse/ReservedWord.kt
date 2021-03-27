@@ -1,4 +1,4 @@
-package moe.kouyou.mikan.script.parse
+package moe.kouyou.mikan.core.parse
 
 object ReservedWord {
   const val Procedure = "procedure"

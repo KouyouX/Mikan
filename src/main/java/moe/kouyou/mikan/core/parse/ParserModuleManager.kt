@@ -1,11 +1,13 @@
-package moe.kouyou.mikan.script.parse
+package moe.kouyou.mikan.core.parse
+
+import moe.kouyou.mikan.core.api.ParserModule
 
 object ParserModuleManager {
   @JvmStatic
-  private val parsers = hashMapOf<String, ParserModule>()
+  private val parsers = hashMapOf<String, ParserModule<*>>()
   
   @JvmStatic
-  fun registerParser(name: String, parser: CommandParser) {
+  fun registerParser(name: String, parser: ParserModule<*>) {
     if (name in ReservedWord.allReservedWords) throw RuntimeException()
     parsers.putIfAbsent(name, parser)
   }

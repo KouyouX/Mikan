@@ -1,0 +1,14 @@
+symbol = [A-Za-z$_][A-za-z0-9$_]*
+number = [1-9][0-9]* or [0-9]+.[0-9]+"
+string = '\'|[^']*'
+edge = (){}
+operator = + - * / %
+eos = ;\r\n
+
+stmt = block | set | if | while | repeat | command
+block = { stmt* }
+set = set name:symbol = value:expr
+if = if cond:expr code:block
+while = while cond:expr code:block
+repeat = repeat count:expr code:block
+command = prefix:symbol arg:expr*

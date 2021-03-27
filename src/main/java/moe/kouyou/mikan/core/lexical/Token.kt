@@ -1,4 +1,4 @@
-package moe.kouyou.mikan.script.lexical
+package moe.kouyou.mikan.core.lexical
 
 enum class TokenType {
   Symbol,

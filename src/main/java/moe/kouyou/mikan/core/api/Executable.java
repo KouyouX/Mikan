@@ -1,6 +1,6 @@
-package moe.kouyou.mikan.script.api;
+package moe.kouyou.mikan.core.api;
 
-import moe.kouyou.mikan.script.exec.MValue;
+import moe.kouyou.mikan.core.exec.MValue;
 import org.jetbrains.annotations.NotNull;
 
 public interface Executable {

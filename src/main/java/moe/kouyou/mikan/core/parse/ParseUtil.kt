@@ -1,6 +1,6 @@
-package moe.kouyou.mikan.script.parse
+package moe.kouyou.mikan.core.parse
 
-import moe.kouyou.mikan.script.lexical.*
+import moe.kouyou.mikan.core.lexical.*
 
 // peeks
 inline fun TokenStream.isNext(literal: String) = this.peek().ctx == literal

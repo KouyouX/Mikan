@@ -1,9 +1,6 @@
-package moe.kouyou.mikan.script.lexical
+package moe.kouyou.mikan.core.lexical
 
 /**
-
-
-object TokenPattern {
 symbol = [A-Za-z$_][A-za-z0-9$_]*
 number = [1-9][0-9]* | [0-9]+.[0-9]+"
 string = '[^']*'
@@ -84,7 +81,7 @@ object Lexer {
         }
         
         ';', '\r', '\n' -> {
-          result.add(Token(TokenType.EOS, ";"))
+          if(result[result.size - 1].type != TokenType.EOS) result.add(Token(TokenType.EOS, ";"))
           ++offset
         }
         

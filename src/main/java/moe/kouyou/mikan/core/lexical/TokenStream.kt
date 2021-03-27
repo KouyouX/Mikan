@@ -1,4 +1,4 @@
-package moe.kouyou.mikan.script.lexical
+package moe.kouyou.mikan.core.lexical
 
 class TokenStream(ctx: Array<Token>) {
   private val ctx: MutableList<Token> = ctx.toMutableList()

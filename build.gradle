@@ -14,16 +14,12 @@ repositories {
   mavenCentral()
   maven { url = 'http://maven.aliyun.com/nexus/content/groups/public/' }
   maven { url = 'http://maven.aliyun.com/nexus/content/repositories/jcenter' }
-  maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'}
+  maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
 }
 
 dependencies {
   compileOnly 'org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT'
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-}
-
-compileJava {
-
 }
 
 compileKotlin {
@@ -32,3 +28,7 @@ compileKotlin {
   }
 }
 
+compileJava {
+  sourceCompatibility = "1.8"
+  targetCompatibility = "1.8"
+}

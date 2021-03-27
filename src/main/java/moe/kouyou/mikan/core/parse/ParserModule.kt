@@ -1,36 +1,26 @@
-package moe.kouyou.mikan.script.parse
+package moe.kouyou.mikan.core.parse
 
-import moe.kouyou.mikan.script.lexical.*
+import moe.kouyou.mikan.core.api.AstNode
+import moe.kouyou.mikan.core.api.ParserModule
+import moe.kouyou.mikan.core.lexical.*
 
-
-object Parser {
-  fun parse(stream: TokenStream): Array<ProcedureNode> {
-    val result = arrayListOf<ProcedureNode>()
-    while (stream.hasMore()) result.add(ProcedureParser.parse(stream))
-    return result.toTypedArray()
-  }
-}
-
-abstract class ParserModule {
-  abstract fun parse(stream: TokenStream): AstNode
-}
-
-object ProcedureParser: ParserModule() {
+object ProcedureParser: ParserModule<ProcedureNode> {
   override fun parse(stream: TokenStream): ProcedureNode {
     stream.expect(ReservedWord.Procedure)
     val name = stream.expectSymbol()
+    if (name.ctx in ReservedWord.allReservedWords) throw RuntimeException()
     val block = BlockParser.parse(stream)
-    return ProcedureNode(name, block)
+    return ProcedureNode(name.ctx, block)
   }
 }
 
-object BlockParser: ParserModule() {
+object BlockParser: ParserModule<BlockNode> {
   override fun parse(stream: TokenStream): BlockNode {
     stream.expect("{")
-    val stats = arrayListOf<StatementNode>()
+    val stats = arrayListOf<StmtNode>()
     stream.flushEOS()
     while (!stream.isNext("}")) {
-      stats.add(StatementParser.parse(stream))
+      stats.add(StmtParser.parse(stream))
       stream.flushEOS()
     }
     stream.expect("}")
@@ -38,31 +28,32 @@ object BlockParser: ParserModule() {
   }
 }
 
-object StatementParser: ParserModule() {
-  override fun parse(stream: TokenStream): StatementNode {
+object StmtParser: ParserModule<StmtNode> {
+  override fun parse(stream: TokenStream): StmtNode {
     stream.flushEOS()
     val s = stream.peek()
     return when (s.ctx) {
-      ReservedWord.Var -> VarParser.parse(stream)
+      "set", ReservedWord.Var -> VarParser.parse(stream)
       ReservedWord.If -> IfParser.parse(stream)
       ReservedWord.While -> WhileParser.parse(stream)
       ReservedWord.Repeat -> RepeatParser.parse(stream)
-      else -> SimpleCommandParser.parse(stream)
+      else -> CommandParser.parse(stream)
     }
   }
 }
 
-object VarParser: ParserModule() {
+object VarParser: ParserModule<VarNode> {
   override fun parse(stream: TokenStream): VarNode {
-    stream.expect(ReservedWord.Var)
+    //stream.expect(ReservedWord.Var)
+    stream.next()
     val name = stream.expectSymbol()
     stream.expect("=")
     val expr = ExpressionParser.parse(stream)
-    return VarNode(name, expr)
+    return VarNode(name.ctx, expr)
   }
 }
 
-object IfParser: ParserModule() {
+object IfParser: ParserModule<IfNode> {
   override fun parse(stream: TokenStream): IfNode {
     stream.expect(ReservedWord.If)
     stream.expect("(")
@@ -73,7 +64,7 @@ object IfParser: ParserModule() {
   }
 }
 
-object WhileParser: ParserModule() {
+object WhileParser: ParserModule<WhileNode> {
   override fun parse(stream: TokenStream): WhileNode {
     stream.expect(ReservedWord.While)
     stream.expect("(")
@@ -84,7 +75,7 @@ object WhileParser: ParserModule() {
   }
 }
 
-object RepeatParser: ParserModule() {
+object RepeatParser: ParserModule<RepeatNode> {
   override fun parse(stream: TokenStream): RepeatNode {
     stream.expect(ReservedWord.Repeat)
     stream.expect("(")
@@ -95,7 +86,7 @@ object RepeatParser: ParserModule() {
   }
 }
 
-object ExpressionParser: ParserModule() {
+object ExpressionParser: ParserModule<ExprNode> {
   override fun parse(stream: TokenStream): ExprNode {
     return levelAdd(stream)
   }
@@ -141,19 +132,11 @@ object ExpressionParser: ParserModule() {
   
 }
 
-/**
- * 未来将会给命令开放自定义 parser
- */
-abstract class CommandParser: ParserModule() {
-  abstract override fun parse(stream: TokenStream): CommandNode
-}
-
-object SimpleCommandParser: CommandParser() {
+object CommandParser: ParserModule<CommandNode> {
   override fun parse(stream: TokenStream): CommandNode {
     val name = stream.expectSymbol()
     val args = arrayListOf<ExprNode>()
     while (!stream.isNextEOS()) args.add(ExpressionParser.parse(stream))
     return CommandNode(name.ctx, args.toTypedArray())
   }
-  
 }

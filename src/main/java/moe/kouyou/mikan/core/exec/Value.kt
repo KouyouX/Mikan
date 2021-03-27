@@ -1,16 +1,11 @@
-package moe.kouyou.mikan.script.exec
+package moe.kouyou.mikan.core.exec
 
-sealed class MValue(val value: Any)
+sealed class MValue(open val value: Any)
 
-class MNumber(value: Double): MValue(value) {
+class MNumber(override val value: Double): MValue(value) {
   companion object {
     @JvmStatic
-    val True = MNumber(1.0)
-    @JvmStatic
-    val False = MNumber(0.0)
-    
-    @JvmStatic
-    fun valueOfBoolean(b: Boolean) = if (b) True else False
+    inline fun of(i: Double) = MString(i)
   }
   
   override fun equals(other: Any?): Boolean {
@@ -24,7 +19,12 @@ class MNumber(value: Double): MValue(value) {
   }
 }
 
-class MString(value: String): MValue(value) {
+class MString(override val value: String): MValue(value) {
+  companion object {
+    @JvmStatic
+    inline fun of(s: String) = MString(s)
+  }
+  
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is MString) return false
@@ -36,8 +36,7 @@ class MString(value: String): MValue(value) {
   }
 }
 
-/*
-class MBoolean private constructor(val value: Boolean): MValue() {
+class MBoolean(override val value: Boolean): MValue(value) {
   companion object {
     @JvmStatic
     val True = MBoolean(true)
@@ -45,9 +44,10 @@ class MBoolean private constructor(val value: Boolean): MValue() {
     val False = MBoolean(false)
     
     @JvmStatic
-    fun valueOf(b: Boolean): MBoolean {
-      return if (b) True else False
-    }
+    inline fun of(b: Boolean) = if (b) True else False
+  }
+  
+  override fun hashCode(): Int {
+    return value.hashCode()
   }
 }
-*/

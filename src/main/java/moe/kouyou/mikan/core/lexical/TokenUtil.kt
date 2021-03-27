@@ -1,4 +1,4 @@
-package moe.kouyou.mikan.script.lexical
+package moe.kouyou.mikan.core.lexical
 
 inline fun Token.isSymbol() = this.type == TokenType.Symbol
 inline fun Token.isString() = this.type == TokenType.String
