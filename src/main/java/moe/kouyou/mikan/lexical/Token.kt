@@ -7,6 +7,7 @@ data class Token(val type: TokenType, val text: String) {
     inline fun isInteger() = this.type == TokenType.Integer
     inline fun isFloat() = this.type == TokenType.Float
     inline fun isBoolean() = this.type == TokenType.Boolean
+    inline fun isNull() = this.type == TokenType.Null
     inline fun isEdge() = this.type == TokenType.Symbol
     inline fun isOperator() = this.type == TokenType.Operator
     inline fun isLiteral() = this.type == TokenType.String || this.type == TokenType.Integer
@@ -21,5 +22,6 @@ enum class TokenType {
     Integer,
     Float,
     Boolean,
+    Null,
     Edge,
 }

@@ -1,8 +1,7 @@
 package moe.kouyou.mikan.stdlib
 
-import moe.kouyou.mikan.core.api.Registry
+import moe.kouyou.mikan.execute.MValue
 
-val nope = Registry.registerCommand("nope") {}
-val print = Registry.registerCommand("print") {it.forEach(::println)}
-
+val nope: (Array<MValue>) -> Unit = {}
+val print: (Array<MValue>) -> Unit = {it.forEach(::println)}
 

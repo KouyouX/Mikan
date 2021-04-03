@@ -4,13 +4,13 @@ import moe.kouyou.mikan.lexical.Token
 
 sealed class AstNode
 
-open class Function(val name: String, val code: Array<Statement>): AstNode()
+open class Function(val name: String, val code: BlockStmt): AstNode()
 typealias Func = Function
 
 open class Statement: AstNode()
 typealias Stmt = Statement
 
-open class Expression: AstNode()
+sealed class Expression: AstNode()
 typealias Expr = Expression
 
 /**
