@@ -5,7 +5,7 @@
 
 ----
 
-**Mikan** 是一个主要使用 **Kotlin** 编写的 **脚本语言插件**， 为 **Bukkit** 服务器 提供脚本功能
+**Mikan** 是一个主要使用 **Kotlin** 及 **Java** 编写的 **脚本语言插件**， 为 **Bukkit** 服务器 提供脚本功能
 
 这个项目的名字来源于日语ミカン（蜜柑）
 
@@ -27,6 +27,12 @@
 - 更新日志: [release](https://github.com/KouyouX/Mikan/releases)
 - 开发计划: [milestones](https://github.com/KouyouX/Mikan/milestones)
 - 讨论: [GitHub Discussions](https://github.com/KouyouX/Mikan/discussions)
+
+---
+
+## 贡献代码
+请给我发 Pull Request, 我会尽快处理.
+只接受 Kotlin(推荐) 和 Java 书写的代码.
 
 ---
 
