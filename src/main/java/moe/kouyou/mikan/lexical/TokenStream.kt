@@ -8,8 +8,3 @@ class TokenStream(val tokens: Array<Token>) {
     inline fun next() = tokens[offset++]
     inline fun hasMore() = tokens.size == offset + 1
 }
-
-
-
-
-

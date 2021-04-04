@@ -30,6 +30,7 @@ object ExecutorImpl : Executor {
     private fun execStmt(env: Environment, stmt: Statement) {
         if (returned) return
         when (stmt) {
+            is NopeStmt -> return
             is BlockStmt -> execBlock(env, stmt)
             is VarStmt -> execVar(env, stmt)
             is WhileStmt -> execWhile(env, stmt)
@@ -50,7 +51,19 @@ object ExecutorImpl : Executor {
     }
 
     private inline fun execWhile(env: Environment, stmt: WhileStmt) {
-        while (evalExpr(env, stmt.condition) == MBoolean.True) execStmt(env, stmt.code)
+        a@while (evalExpr(env, stmt.condition) == MBoolean.True) {
+            if (returned) return
+            if(stmt.code is BlockStmt) {
+                for (s in stmt.code.code) {
+                    if (returned) return
+                    if (s == ContinueStmt) continue@a
+                    else if (s == BreakStmt) return
+                    execStmt(env, stmt)
+                }
+            } else if (stmt.code === ContinueStmt) continue@a
+            else if (stmt.code === BreakStmt) return
+            else execStmt(env, stmt)
+        }
     }
 
     private inline fun execIf(env: Environment, stmt: IfStmt) {

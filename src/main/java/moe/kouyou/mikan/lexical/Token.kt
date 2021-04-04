@@ -12,6 +12,7 @@ data class Token(val type: TokenType, val text: String) {
     inline fun isOperator() = this.type == TokenType.Operator
     inline fun isLiteral() = this.type == TokenType.String || this.type == TokenType.Integer
             || this.type == TokenType.Float || this.type == TokenType.Boolean
+    inline fun isEOS() = this.type == TokenType.EOS
 }
 
 enum class TokenType {
@@ -24,4 +25,5 @@ enum class TokenType {
     Boolean,
     Null,
     Edge,
+    EOS,
 }

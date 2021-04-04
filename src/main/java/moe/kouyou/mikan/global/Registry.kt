@@ -18,9 +18,9 @@ object Registry {
         funcParsers[prefix] = parser
     }
 
-    fun getStmtParser(prefix: String) = stmtParsers.getOrElse(prefix) { throw RuntimeException() }
+    fun getStmtParser(prefix: String) = stmtParsers[prefix]
 
-    fun getFuncParser(prefix: String) = funcParsers.getOrElse(prefix) { throw RuntimeException() }
+    fun getFuncParser(prefix: String) = funcParsers[prefix]
 
     private val foreignFunctions = hashMapOf<String, (Array<MValue>) -> MValue>()
 
